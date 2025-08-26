@@ -2,12 +2,17 @@ package com.benjamerc.taskmanager.testhelper;
 
 import com.benjamerc.taskmanager.domain.dto.user.UserDTO;
 import com.benjamerc.taskmanager.domain.dto.user.UserPostDTO;
+import com.benjamerc.taskmanager.util.TestUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,14 +41,23 @@ public record UserTestHelper(MockMvc mockMvc, ObjectMapper objectMapper) {
                 .andReturn();
 
         String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        UserDTO[] users = objectMapper.readValue(json, UserDTO[].class);
+        JsonNode root = objectMapper.readTree(json);
 
-        assertEquals(expectedUsers.length, users.length);
+        UserDTO[] users = objectMapper.treeToValue(root.get("content"), UserDTO[].class);
 
-        for (int i = 0; i < expectedUsers.length; i++) {
-            assertEquals(expectedUsers[i].getId(), users[i].getId());
-            assertEquals(expectedUsers[i].getUsername(), users[i].getUsername());
-            assertEquals(expectedUsers[i].getEmail(), users[i].getEmail());
+        List<UserDTO> actualList = TestUtils.sortAndAssertSize(expectedUsers, users, UserDTO::getId);
+        List<UserDTO> expectedList = Arrays.stream(expectedUsers)
+                .sorted(Comparator.comparing(UserDTO::getId))
+                .toList();
+
+        for (int i = 0; i < expectedList.size(); i++) {
+            UserDTO expected = expectedList.get(i);
+            UserDTO actual = actualList.get(i);
+
+            assertEquals(expected.getId(), actual.getId());
+            assertEquals(expected.getUsername(), actual.getUsername());
+            assertEquals(expected.getEmail(), actual.getEmail());
         }
     }
+
 }

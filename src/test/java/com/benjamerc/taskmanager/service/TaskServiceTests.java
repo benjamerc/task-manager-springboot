@@ -12,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -64,19 +68,21 @@ public class TaskServiceTests {
         savedTaskEntityA.setId(1L);
         TaskEntity savedTaskEntityB = TaskTestDataUtil.createTestTaskEntity();
         savedTaskEntityB.setId(2L);
+
         List<TaskEntity> mockList = List.of(savedTaskEntityA, savedTaskEntityB);
+        Page<TaskEntity> mockPage = new PageImpl<>(mockList);
 
-        when(taskRepository.findAll()).thenReturn(mockList);
+        when(taskRepository.findAll(any(Pageable.class))).thenReturn(mockPage);
 
-        List<TaskEntity> resultList = taskService.findAll();
+        Page<TaskEntity> resultPage = taskService.findAll(PageRequest.of(0, 10));
 
-        assertNotNull(resultList);
-        assertEquals(2, resultList.size());
+        assertNotNull(resultPage);
+        assertEquals(2, resultPage.getContent().size());
 
-        assertEquals("Title Entity Task", resultList.get(0).getTitle());
-        assertEquals("Title Entity Task", resultList.get(1).getTitle());
+        assertEquals("Title Entity Task", resultPage.getContent().get(0).getTitle());
+        assertEquals("Title Entity Task", resultPage.getContent().get(1).getTitle());
 
-        verify(taskRepository).findAll();
+        verify(taskRepository).findAll(any(Pageable.class));
     }
 
     @Test

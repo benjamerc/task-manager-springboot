@@ -7,12 +7,12 @@ import com.benjamerc.taskmanager.exception.task.TaskIdMismatchException;
 import com.benjamerc.taskmanager.exception.task.TaskNotFoundException;
 import com.benjamerc.taskmanager.service.TaskService;
 import com.benjamerc.taskmanager.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -34,11 +34,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskEntity> findAll() {
-        Iterable<TaskEntity> taskEntityIterable = taskRepository.findAll();
-        return StreamSupport.stream(taskEntityIterable.spliterator(), false)
-                .collect(Collectors.toList());
+    public Page<TaskEntity> findAll(Pageable pageable) {
+        return taskRepository.findAll(pageable);
     }
+
 
     @Override
     public TaskEntity findById(Long id) {

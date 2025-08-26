@@ -1,14 +1,14 @@
 package com.benjamerc.taskmanager.service;
 
 import com.benjamerc.taskmanager.domain.entitiy.TaskEntity;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface TaskService {
 
     TaskEntity save(TaskEntity task);
 
-    List<TaskEntity> findAll();
+    Page<TaskEntity> findAll(Pageable pageable);
 
     TaskEntity findById(Long id);
 

@@ -8,6 +8,10 @@ import com.benjamerc.taskmanager.domain.entitiy.TaskEntity;
 import com.benjamerc.taskmanager.mapper.TaskMapper;
 import com.benjamerc.taskmanager.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,11 +40,11 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskDTO>> getAllTasks() {
-        List<TaskDTO> taskDTOS = taskService.findAll()
-                .stream()
-                .map(taskMapper::toDto)
-                .toList();
+    public ResponseEntity<Page<TaskDTO>> getAllTasks(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable ) {
+
+        Page<TaskDTO> taskDTOS = taskService.findAll(pageable)
+                .map(taskMapper::toDto);
 
         return ResponseEntity.ok(taskDTOS);
     }

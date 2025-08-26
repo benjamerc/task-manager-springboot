@@ -5,6 +5,8 @@ import com.benjamerc.taskmanager.domain.entitiy.UserEntity;
 import com.benjamerc.taskmanager.exception.user.UserIdMismatchException;
 import com.benjamerc.taskmanager.exception.user.UserNotFoundException;
 import com.benjamerc.taskmanager.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,10 +29,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserEntity> findAll() {
-        Iterable<UserEntity> userEntities = userRepository.findAll();
-        return StreamSupport.stream(userEntities.spliterator(), false)
-                .collect(Collectors.toList());
+    public Page<UserEntity> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     @Override

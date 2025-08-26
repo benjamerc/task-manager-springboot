@@ -8,6 +8,10 @@ import com.benjamerc.taskmanager.domain.entitiy.UserEntity;
 import com.benjamerc.taskmanager.mapper.UserMapper;
 import com.benjamerc.taskmanager.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,11 +39,11 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> userDTOS = userService.findAll()
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
+    public ResponseEntity<Page<UserDTO>> getAllUsers(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        Page<UserDTO> userDTOS = userService.findAll(pageable)
+                .map(userMapper::toDto);
 
         return ResponseEntity
                 .ok(userDTOS);

@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,22 +61,23 @@ public class UserServiceTests {
         savedUser2.setId(2L);
         savedUser2.setUsername("User 2");
 
-        Iterable<UserEntity> userEntities = List.of(savedUser1, savedUser2);
+        List<UserEntity> mockList = List.of(savedUser1, savedUser2);
+        Page<UserEntity> mockPage = new PageImpl<>(mockList);
 
-        when(userRepository.findAll()).thenReturn(userEntities);
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(mockPage);
 
-        List<UserEntity> result = userService.findAll();
+        Page<UserEntity> resultPage = userService.findAll(PageRequest.of(0, 10));
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
+        assertNotNull(resultPage);
+        assertEquals(2, resultPage.getContent().size());
 
-        assertEquals(1L, result.get(0).getId());
-        assertEquals("User 1", result.get(0).getUsername());
+        assertEquals(1L, resultPage.getContent().get(0).getId());
+        assertEquals("User 1", resultPage.getContent().get(0).getUsername());
 
-        assertEquals(2L, result.get(1).getId());
-        assertEquals("User 2", result.get(1).getUsername());
+        assertEquals(2L, resultPage.getContent().get(1).getId());
+        assertEquals("User 2", resultPage.getContent().get(1).getUsername());
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAll(any(Pageable.class));
     }
 
     @Test

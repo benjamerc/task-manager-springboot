@@ -2,6 +2,8 @@ package com.benjamerc.taskmanager.testhelper;
 
 import com.benjamerc.taskmanager.domain.dto.task.TaskDTO;
 import com.benjamerc.taskmanager.domain.dto.task.TaskPostDTO;
+import com.benjamerc.taskmanager.util.TestUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,25 +42,27 @@ public record TaskTestHelper(MockMvc mockMvc, ObjectMapper objectMapper) {
                 .andReturn();
 
         String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        TaskDTO[] tasks = objectMapper.readValue(json, TaskDTO[].class);
+        JsonNode root = objectMapper.readTree(json);
 
+        TaskDTO[] tasks = objectMapper.treeToValue(root.get("content"), TaskDTO[].class);
+
+        List<TaskDTO> actualList = TestUtils.sortAndAssertSize(expectedTasks, tasks, TaskDTO::getId);
         List<TaskDTO> expectedList = Arrays.stream(expectedTasks)
                 .sorted(Comparator.comparing(TaskDTO::getId))
                 .toList();
-        List<TaskDTO> actualList = Arrays.stream(tasks)
-                .sorted(Comparator.comparing(TaskDTO::getId))
-                .toList();
-
-        assertEquals(expectedList.size(), actualList.size());
 
         for (int i = 0; i < expectedList.size(); i++) {
-            assertEquals(expectedList.get(i).getId(), actualList.get(i).getId());
-            assertEquals(expectedList.get(i).getTitle(), actualList.get(i).getTitle());
-            assertEquals(expectedList.get(i).getDescription(), actualList.get(i).getDescription());
-            assertEquals(expectedList.get(i).getDueDate(), actualList.get(i).getDueDate());
-            assertEquals(expectedList.get(i).getCompleted(), actualList.get(i).getCompleted());
-            assertEquals(expectedList.get(i).getUserId(), actualList.get(i).getUserId());
+            TaskDTO expected = expectedList.get(i);
+            TaskDTO actual = actualList.get(i);
+
+            assertEquals(expected.getId(), actual.getId());
+            assertEquals(expected.getTitle(), actual.getTitle());
+            assertEquals(expected.getDescription(), actual.getDescription());
+            assertEquals(expected.getDueDate(), actual.getDueDate());
+            assertEquals(expected.getCompleted(), actual.getCompleted());
+            assertEquals(expected.getUserId(), actual.getUserId());
         }
     }
+
 
 }
